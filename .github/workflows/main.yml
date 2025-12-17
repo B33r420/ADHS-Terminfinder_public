@@ -1,0 +1,32 @@
+name: ADHS Termin Checker
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Alle 30 Minuten automatisch laufen
+  workflow_dispatch:       # Ermöglicht manuelles Starten
+
+jobs:
+  check-termin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@latest
+
+      - name: Install dependencies
+        run: |
+          pip install selenium
+
+      - name: Run Termin Checker
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        run: python check_adhs_termin.py
