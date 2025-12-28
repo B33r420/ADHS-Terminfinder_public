@@ -80,14 +80,14 @@ def send_notification(is_test=False):
     msg = MIMEMultipart()
     msg['From'] = EMAIL_FROM
     msg['To'] = EMAIL_TO  # Kommagetrennte Liste für die Anzeige im Mail-Client
-    msg['Subject'] = '🧪 PROBEALARM: ADHS-Termin-Watcher Test' if is_test else '🚨 ALARM! ADHS-Termin verfügbar bei MVZ Noris Psychotherapie!'
+    msg['Subject'] = ' PROBEALARM: ADHS-Termin-Watcher Test' if is_test else '🚨 ALARM! ADHS-Termin verfügbar bei MVZ Noris Psychotherapie!'
     
     body = f"""
     {'Mahlzeit Nachbarn :D' if not is_test else 'Mahlzeit Nachbarn – das ist nur ein TEST :D'}
 
-    {'Es gibt gerade einen freien Termin für die ADHS-Diagnostik!' if not is_test else 'Das ist ein Probealarm – alles funktioniert super! 🎉'}
+    {'Es gibt gerade einen freien Termin für die ADHS-Diagnostik!' if not is_test else 'Das ist ein Probealarm ob ihr die Mail empfangt'}
 
-    {'Direktlink zur Buchungsseite: {URL}' if not is_test else 'Kein echter Termin, nur zum Testen des Systems.'}
+    {'Direktlink zur Buchungsseite: {URL}' if not is_test else 'Direktlink zur Buchungsseite: {URL}'}
 
     Grüße
     Tobi :)
