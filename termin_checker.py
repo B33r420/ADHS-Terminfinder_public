@@ -19,6 +19,11 @@ EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
 TEST_MODE = os.getenv('TEST_MODE', 'false').lower() == 'true'  # Neu: Für Probealarm
+print("Debug: EMAIL_FROM geladen:", "Ja" if EMAIL_FROM else "Nein (fehlt!)")
+print("Debug: EMAIL_TO geladen:", EMAIL_TO or "Nein (fehlt!)")
+print("Debug: EMAIL_PASSWORD geladen:", "Ja" if EMAIL_PASSWORD else "Nein (fehlt!)")
+print("Debug: Rohwert von TEST_MODE aus env:", os.getenv('TEST_MODE'))
+print("Debug: TEST_MODE als Boolean:", TEST_MODE)
 
 def setup_driver():
     """Konfiguriert headless Chromium für GitHub Actions."""
@@ -36,7 +41,7 @@ def setup_driver():
 def check_availability():
     """Lädt die Seite und prüft auf verfügbare Termine – oder sendet Test-Mail."""
     if TEST_MODE:
-        print("🔧 TEST_MODE aktiviert – sende Probealarm!")
+        print(" TEST_MODE aktiviert – sende Probealarm!")
         send_notification(is_test=True)  # Wir erweitern die Funktion leicht
         return
     
