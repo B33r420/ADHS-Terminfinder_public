@@ -23,9 +23,10 @@ jobs:
         run: |
           pip install selenium
 
-      - name: Run Checker
+      - name: Run Termin Checker
         env:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-        run: python termin_checker.py
+          TEST_MODE: ${{ secrets.TEST_MODE }}  # Neu: Direkt weitergeben (sicherheitshalber)
+        run: python termin_checker.py  # Oder wie deine Datei genau heißt!
