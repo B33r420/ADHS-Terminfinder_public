@@ -18,8 +18,8 @@ EMAIL_TO = os.getenv('EMAIL_TO')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD') 
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
-# TEST_MODE = os.getenv('TEST_MODE', 'false').lower() == 'true'  # Auskommentieren für normal
-TEST_MODE = True  # Hardcoded für Test – direkt Probealarm!
+TEST_MODE = os.getenv('TEST_MODE', 'false').lower() == 'true'  
+# TEST_MODE = True  # Hardcoded für Test – direkt Probealarm!
 print("Debug: EMAIL_FROM geladen:", "Ja" if EMAIL_FROM else "Nein (fehlt!)")
 print("Debug: EMAIL_TO geladen:", EMAIL_TO or "Nein (fehlt!)")
 print("Debug: EMAIL_PASSWORD geladen:", "Ja" if EMAIL_PASSWORD else "Nein (fehlt!)")
