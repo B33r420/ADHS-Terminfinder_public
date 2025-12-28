@@ -15,7 +15,7 @@ URL = "https://www.terminland.de/noris-psychotherapie/online/ADHS_new/default.as
 # E-Mail-Konfiguration (als Secrets in GitHub Actions setzen!)
 EMAIL_FROM = os.getenv('EMAIL_FROM')
 EMAIL_TO = os.getenv('EMAIL_TO')
-EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')  # Besser: Gmail App-Password verwenden
+EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD') 
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
 
@@ -67,26 +67,28 @@ def check_availability():
         driver.quit()
 
 def send_notification():
-    """Sendet E-Mail bei freiem Termin."""
+    """Sendet E-Mail bei freiem Termin an mehrere Empfänger."""
     if not all([EMAIL_FROM, EMAIL_TO, EMAIL_PASSWORD]):
         print("E-Mail-Konfig fehlt (Secrets prüfen!).", file=sys.stderr)
         return
+
+    # EMAIL_TO ist z. B.: "deine@mail.de, mama@mail.de, partner@mail.de, freund@mail.de"
+    recipient_list = [email.strip() for email in EMAIL_TO.split(',')]
     
     msg = MIMEMultipart()
     msg['From'] = EMAIL_FROM
-    msg['To'] = EMAIL_TO
-    msg['Subject'] = '🚨 ADHS-Termin verfügbar bei MVZ Noris Psychotherapie!'
+    msg['To'] = EMAIL_TO  # Wird als kommagetrennte Liste angezeigt (für die Anzeige im Mail-Client)
+    msg['Subject'] = '🚨 ALARM! ADHS-Termin verfügbar bei MVZ Noris Psychotherapie!'
     
     body = f"""
-    Hallo!
+    Mahlzeit Nachbarn :D
 
     Es gibt gerade einen freien Termin für die ADHS-Diagnostik!
 
-    Schnell zur Buchungsseite: {URL}
+    Direktlink zur Buchungsseite: {URL}
 
-    Viel Erfolg – du schaffst das!
-    
-    Dein Termin-Watcher
+    Grüße
+    Tobi :)
     """
     
     msg.attach(MIMEText(body, 'plain'))
@@ -95,9 +97,10 @@ def send_notification():
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         server.login(EMAIL_FROM, EMAIL_PASSWORD)
-        server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
+        # Hier wird wirklich an alle einzeln gesendet
+        server.sendmail(EMAIL_FROM, recipient_list, msg.as_string())
         server.quit()
-        print("E-Mail erfolgreich gesendet!")
+        print(f"E-Mail erfolgreich an {len(recipient_list)} Empfänger gesendet!")
     except Exception as e:
         print(f"Fehler beim E-Mail-Versand: {e}", file=sys.stderr)
 
