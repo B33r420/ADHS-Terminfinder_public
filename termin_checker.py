@@ -18,6 +18,7 @@ EMAIL_TO = os.getenv('EMAIL_TO')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD') 
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
+TEST_MODE = os.getenv('TEST_MODE', 'false').lower() == 'true'  # Neu: Für Probealarm
 
 def setup_driver():
     """Konfiguriert headless Chromium für GitHub Actions."""
@@ -33,28 +34,29 @@ def setup_driver():
     return driver
 
 def check_availability():
-    """Lädt die Seite und prüft auf verfügbare Termine."""
+    """Lädt die Seite und prüft auf verfügbare Termine – oder sendet Test-Mail."""
+    if TEST_MODE:
+        print("🔧 TEST_MODE aktiviert – sende Probealarm!")
+        send_notification(is_test=True)  # Wir erweitern die Funktion leicht
+        return
+    
     driver = setup_driver()
     try:
         driver.get(URL)
         
-        # Warte bis die Seite grundsätzlich geladen ist (max. 20 Sek.)
         WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.TAG_NAME, "body"))
         )
         
-        # Gesamter sichtbarer Text der Seite
         page_text = driver.page_source.lower()
         
-        # Texte, die "keine Termine" anzeigen (kann bei Bedarf erweitert werden)
         no_appointment_texts = [
             "aktuell sind keine termine verfügbar",
             "derzeit keine freien termine",
             "für die online-terminbuchung stehen z.zt. keine freien termine",
-            "keine terminen verfügbar"
+            "keine termine verfügbar"
         ]
         
-        # Wenn KEINER dieser Texte vorhanden ist → Termin verfügbar
         if not any(text in page_text for text in no_appointment_texts):
             print("🚨 TERMIN VERFÜGBAR! Sende Benachrichtigung...")
             send_notification()
@@ -66,26 +68,26 @@ def check_availability():
     finally:
         driver.quit()
 
-def send_notification():
-    """Sendet E-Mail bei freiem Termin an mehrere Empfänger."""
+def send_notification(is_test=False):
+    """Sendet E-Mail bei freiem Termin oder Probealarm an mehrere Empfänger."""
     if not all([EMAIL_FROM, EMAIL_TO, EMAIL_PASSWORD]):
         print("E-Mail-Konfig fehlt (Secrets prüfen!).", file=sys.stderr)
         return
 
-    # EMAIL_TO ist z. B.: "deine@mail.de, mama@mail.de, partner@mail.de, freund@mail.de"
+    # EMAIL_TO ist z. B.: "deine@mail.de, mama@mail.de, partner@mail.de"
     recipient_list = [email.strip() for email in EMAIL_TO.split(',')]
     
     msg = MIMEMultipart()
     msg['From'] = EMAIL_FROM
-    msg['To'] = EMAIL_TO  # Wird als kommagetrennte Liste angezeigt (für die Anzeige im Mail-Client)
-    msg['Subject'] = '🚨 ALARM! ADHS-Termin verfügbar bei MVZ Noris Psychotherapie!'
+    msg['To'] = EMAIL_TO  # Kommagetrennte Liste für die Anzeige im Mail-Client
+    msg['Subject'] = '🧪 PROBEALARM: ADHS-Termin-Watcher Test' if is_test else '🚨 ALARM! ADHS-Termin verfügbar bei MVZ Noris Psychotherapie!'
     
     body = f"""
-    Mahlzeit Nachbarn :D
+    {'Mahlzeit Nachbarn :D' if not is_test else 'Mahlzeit Nachbarn – das ist nur ein TEST :D'}
 
-    Es gibt gerade einen freien Termin für die ADHS-Diagnostik!
+    {'Es gibt gerade einen freien Termin für die ADHS-Diagnostik!' if not is_test else 'Das ist ein Probealarm – alles funktioniert super! 🎉'}
 
-    Direktlink zur Buchungsseite: {URL}
+    {'Direktlink zur Buchungsseite: {URL}' if not is_test else 'Kein echter Termin, nur zum Testen des Systems.'}
 
     Grüße
     Tobi :)
@@ -97,10 +99,9 @@ def send_notification():
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         server.login(EMAIL_FROM, EMAIL_PASSWORD)
-        # Hier wird wirklich an alle einzeln gesendet
         server.sendmail(EMAIL_FROM, recipient_list, msg.as_string())
         server.quit()
-        print(f"E-Mail erfolgreich an {len(recipient_list)} Empfänger gesendet!")
+        print(f"{'Test-' if is_test else ''}E-Mail erfolgreich an {len(recipient_list)} Empfänger gesendet!")
     except Exception as e:
         print(f"Fehler beim E-Mail-Versand: {e}", file=sys.stderr)
 
