@@ -18,8 +18,8 @@ EMAIL_TO = os.getenv('EMAIL_TO')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD') 
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
-TEST_MODE = os.getenv('TEST_MODE', 'false').lower() == 'true'  
-# TEST_MODE = True  # Hardcoded für Test – direkt Probealarm!
+#TEST_MODE = os.getenv('TEST_MODE', 'false').lower() == 'true'  
+TEST_MODE = True  # Hardcoded für Test – direkt Probealarm!
 print("Debug: EMAIL_FROM geladen:", "Ja" if EMAIL_FROM else "Nein (fehlt!)")
 print("Debug: EMAIL_TO geladen:", EMAIL_TO or "Nein (fehlt!)")
 print("Debug: EMAIL_PASSWORD geladen:", "Ja" if EMAIL_PASSWORD else "Nein (fehlt!)")
@@ -86,14 +86,14 @@ def send_notification(is_test=False):
     msg = MIMEMultipart()
     msg['From'] = EMAIL_FROM
     msg['To'] = EMAIL_TO  # Kommagetrennte Liste für die Anzeige im Mail-Client
-    msg['Subject'] = ' PROBEALARM: ADHS-Termin-Watcher Test' if is_test else '🚨 ALARM! ADHS-Termin verfügbar bei MVZ Noris Psychotherapie!'
+    msg['Subject'] = ' PROBEALARM: ADHS-Termin Test' if is_test else '🚨 ALARM! ADHS-Termin verfügbar bei MVZ Noris Psychotherapie!'
     
     body = f"""
     {'Mahlzeit Nachbarn :D' if not is_test else 'Mahlzeit Nachbarn – das ist nur ein TEST :D'}
 
     {'Es gibt gerade einen freien Termin für die ADHS-Diagnostik!' if not is_test else 'Das ist ein Probealarm ob ihr die Mail empfangt'}
 
-    {'Direktlink zur Buchungsseite: {URL}' if not is_test else 'Direktlink zur Buchungsseite: {URL}'}
+    {'Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS_new/default.aspx?m=39059&ll=KOdJU&dpp=KOdJU&dlgid=9&step=3&dlg=1&a2364649380=2391792645&css=1 ' if not is_test else 'Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS_new/default.aspx?m=39059&ll=KOdJU&dpp=KOdJU&dlgid=9&step=3&dlg=1&a2364649380=2391792645&css=1 '}
 
     Grüße
     Tobi :)
