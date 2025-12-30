@@ -2,7 +2,7 @@ name: ADHS Termin Checker
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # Alle 30 Minuten automatisch laufen
+    - cron: '*/10000 * * * *'  # Alle 30 Minuten automatisch laufen
   workflow_dispatch:       # Ermöglicht manuelles Starten
 
 jobs:
