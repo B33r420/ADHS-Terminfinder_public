@@ -64,6 +64,7 @@ def check_availability():
             "aktuell sind keine termine verfügbar",
             "zur Zeit keine freien Termine",
             "für die online-terminbuchung stehen z.zt. keine freien termine",
+            "Für Ihre Auswahl gibt es zur Zeit keine freien Termine",
             "keine termine verfügbar"
         ]
         
