@@ -62,11 +62,24 @@ def check_availability():
         
         no_appointment_texts = [
             "aktuell sind keine termine verfügbar",
-            "zur Zeit keine freien Termine",
+            "keine termine verfügbar",
+            "keine freien termine",
+            "keine freien termine zur verfügung",
+            "stehen z.zt. keine freien termine",
             "für die online-terminbuchung stehen z.zt. keine freien termine",
-            "Für Ihre Auswahl gibt es zur Zeit keine freien Termine",
-            "keine termine verfügbar"
+            "für die online-terminbuchung stehen z.zt",
+            "z.zt. keine freien termine",
+            "für ihre auswahl gibt es zur zeit keine freien termine",
+            "zur zeit keine freien termine",
+            "bitte aktivieren sie javascript",  # falls JS nicht lädt → kein echter Alarm!
+            "kein termin verfügbar",
+            "keine termi"  # fängt auch Teile ab
         ]
+
+        page_text = driver.page_source.lower()
+        print("=== DEBUG: Relevanter Seiten-Text (suche nach 'keine', 'z.zt', 'verfügbar') ===")
+        print(page_text[page_text.find('keine')-100:page_text.find('keine')+300] if 'keine' in page_text else "Kein 'keine' gefunden")
+        print("=== ENDE DEBUG ===")
         
         if not any(text in page_text for text in no_appointment_texts):
             print("🚨 TERMIN VERFÜGBAR! Sende Benachrichtigung...")
