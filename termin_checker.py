@@ -10,7 +10,11 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 # URL der Terminbuchungsseite
-URL = "https://www.terminland.de/noris-psychotherapie/online/ADHS_new/default.aspx?m=39059&ll=KOdJU&dpp=KOdJU&dlgid=9&step=3&dlg=1&a2364649380=2391792645&css=1"
+# URL_für_Erwachsene    URL = "https://www.terminland.de/noris-psychotherapie/online/ADHS_new/default.aspx?m=39059&ll=KOdJU&dpp=KOdJU&dlgid=9&step=3&dlg=1&a2364649380=2391792645&css=1"
+
+# URL_für_Kinder
+URL = "https://www.terminland.de/noris-psychotherapie/online/ADHS-Abkl%c3%a4rung%20f%c3%bcr%20Kinder%20oder%20Jugendliche/default.aspx?m=39059&ll=LDUrD&dpp=LDUrD&dlgid=9&step=3&dlg=1&a2364649380=2790686455&css=1"
+
 
 # E-Mail-Konfiguration (als Secrets in GitHub Actions setzen!)
 EMAIL_FROM = os.getenv('EMAIL_FROM')
@@ -89,12 +93,14 @@ def send_notification(is_test=False):
     msg['Subject'] = ' PROBEALARM: ADHS-Termin Test' if is_test else '🚨 ALARM! ADHS-Termin verfügbar bei MVZ Noris Psychotherapie!'
     
     body = f"""
-    {'Mahlzeit Nachbarn :D' if not is_test else 'Mahlzeit Nachbarn – das ist nur ein TEST :D'}
+    {'Hallöchen' if not is_test else 'Das ist nur ein TEST :)'}
 
     {'Es gibt gerade einen freien Termin für die ADHS-Diagnostik!' if not is_test else 'Das ist ein Probealarm ob ihr die Mail empfangt'}
 
-    {'Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS_new/default.aspx?m=39059&ll=KOdJU&dpp=KOdJU&dlgid=9&step=3&dlg=1&a2364649380=2391792645&css=1 ' if not is_test else 'Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS_new/default.aspx?m=39059&ll=KOdJU&dpp=KOdJU&dlgid=9&step=3&dlg=1&a2364649380=2391792645&css=1 '}
+   # Für Erwachsene {'Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS_new/default.aspx?m=39059&ll=KOdJU&dpp=KOdJU&dlgid=9&step=3&dlg=1&a2364649380=2391792645&css=1 ' if not is_test else 'Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS_new/default.aspx?m=39059&ll=KOdJU&dpp=KOdJU&dlgid=9&step=3&dlg=1&a2364649380=2391792645&css=1 '}
 
+# Für Kinder:
+    {'Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS-Abkl%c3%a4rung%20f%c3%bcr%20Kinder%20oder%20Jugendliche/default.aspx?m=39059&ll=LDUrD&dpp=LDUrD&dlgid=9&step=3&dlg=1&a2364649380=2790686455&css=1 ' if not is_test else 'Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS-Abkl%c3%a4rung%20f%c3%bcr%20Kinder%20oder%20Jugendliche/default.aspx?m=39059&ll=LDUrD&dpp=LDUrD&dlgid=9&step=3&dlg=1&a2364649380=2790686455&css=1 '}
     Grüße
     Tobi :)
     """
