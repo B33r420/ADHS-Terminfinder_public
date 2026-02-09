@@ -96,8 +96,7 @@ def send_notification(is_test=False):
     body = f"""
     {'Hallöchen' if not is_test else 'Das ist nur ein TEST :)'}
 
-    {'Es gibt gerade einen freien Termin für die ADHS-Diagnostik! 
-    Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS-Abkl%c3%a4rung%20f%c3%bcr%20Kinder%20oder%20Jugendliche/default.aspx?m=39059&ll=LDUrD&dpp=LDUrD&dlgid=9&step=3&dlg=1&a2364649380=2790686455&css=1 '}
+    {'Es gibt gerade einen freien Termin für die ADHS-Diagnostik! Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS-Abkl%c3%a4rung%20f%c3%bcr%20Kinder%20oder%20Jugendliche/default.aspx?m=39059&ll=LDUrD&dpp=LDUrD&dlgid=9&step=3&dlg=1&a2364649380=2790686455&css=1 '}
 
     Tobi :)
     """
