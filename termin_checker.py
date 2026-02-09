@@ -1,29 +1,24 @@
 import os
 import sys
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import undetected_chromedriver as uc   # ← neu hinzugefügt
 
 # URL der Terminbuchungsseite
-# URL_für_Erwachsene    URL = "https://www.terminland.de/noris-psychotherapie/online/ADHS_new/default.aspx?m=39059&ll=KOdJU&dpp=KOdJU&dlgid=9&step=3&dlg=1&a2364649380=2391792645&css=1"
-
-# URL_für_Kinder
-URL = "https://www.terminland.de/noris-psychotherapie/online/ADHS-Abkl%c3%a4rung%20f%c3%bcr%20Kinder%20oder%20Jugendliche/default.aspx?m=39059&ll=LDUrD&dpp=LDUrD&dlgid=9&step=3&dlg=1&a2364649380=2790686455&css=1"
-
+URL = "https://www.terminland.de/noris-psychotherapie/online/ADHS-Abkl%C3%A4rung%20f%C3%BCr%20Kinder%20oder%20Jugendliche/default.aspx?m=39059&ll=LDUrD&dpp=LDUrD&dlgid=9&step=3&dlg=1&a2364649380=2790686455&css=1"
 
 # E-Mail-Konfiguration (als Secrets in GitHub Actions setzen!)
 EMAIL_FROM = os.getenv('EMAIL_FROM')
 EMAIL_TO = os.getenv('EMAIL_TO')
-EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD') 
+EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
-TEST_MODE = os.getenv('TEST_MODE', 'false').lower() == 'true'  
-#TEST_MODE = True  # Hardcoded für Test – direkt Probealarm!
+TEST_MODE = os.getenv('TEST_MODE', 'false').lower() == 'true'
+
 print("Debug: EMAIL_FROM geladen:", "Ja" if EMAIL_FROM else "Nein (fehlt!)")
 print("Debug: EMAIL_TO geladen:", EMAIL_TO or "Nein (fehlt!)")
 print("Debug: EMAIL_PASSWORD geladen:", "Ja" if EMAIL_PASSWORD else "Nein (fehlt!)")
@@ -31,35 +26,36 @@ print("Debug: Rohwert von TEST_MODE aus env:", os.getenv('TEST_MODE'))
 print("Debug: TEST_MODE als Boolean:", TEST_MODE)
 
 def setup_driver():
-    """Konfiguriert headless Chromium für GitHub Actions."""
-    chrome_options = Options()
+    """Konfiguriert undetected-chromedriver (umgeht Bot-Erkennung + lädt JS)."""
+    chrome_options = uc.ChromeOptions()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0 Safari/537.36")
-    
-    driver = webdriver.Chrome(options=chrome_options)
+    chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
+   
+    driver = uc.Chrome(options=chrome_options, version_main=133)  # ← wichtig für GitHub Actions
     return driver
 
 def check_availability():
     """Lädt die Seite und prüft auf verfügbare Termine – oder sendet Test-Mail."""
     if TEST_MODE:
         print(" TEST_MODE aktiviert – sende Probealarm!")
-        send_notification(is_test=True)  # Wir erweitern die Funktion leicht
+        send_notification(is_test=True)
         return
-    
+   
     driver = setup_driver()
     try:
         driver.get(URL)
-        
-        WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.TAG_NAME, "body"))
+       
+        # Besserer Wait: wartet auf den Bereich, in dem der Termin-Text steht
+        WebDriverWait(driver, 25).until(
+            EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Termine') or contains(text(), 'keine') or contains(text(), 'verfügbar')]"))
         )
-        
+       
         page_text = driver.page_source.lower()
-        
+       
         no_appointment_texts = [
             "aktuell sind keine termine verfügbar",
             "keine termine verfügbar",
@@ -71,22 +67,21 @@ def check_availability():
             "z.zt. keine freien termine",
             "für ihre auswahl gibt es zur zeit keine freien termine",
             "zur zeit keine freien termine",
-            "bitte aktivieren sie javascript",  # falls JS nicht lädt → kein echter Alarm!
+            "bitte aktivieren sie javascript",
             "kein termin verfügbar",
-            "keine termi"  # fängt auch Teile ab
+            "keine termi"
         ]
-
-        page_text = driver.page_source.lower()
+       
         print("=== DEBUG: Relevanter Seiten-Text (suche nach 'keine', 'z.zt', 'verfügbar') ===")
         print(page_text[page_text.find('keine')-100:page_text.find('keine')+300] if 'keine' in page_text else "Kein 'keine' gefunden")
         print("=== ENDE DEBUG ===")
-        
+       
         if not any(text in page_text for text in no_appointment_texts):
             print("🚨 TERMIN VERFÜGBAR! Sende Benachrichtigung...")
             send_notification()
         else:
             print("Noch keine Termine verfügbar.")
-            
+           
     except Exception as e:
         print(f"Fehler beim Laden/Prüfen der Seite: {e}", file=sys.stderr)
     finally:
@@ -97,25 +92,21 @@ def send_notification(is_test=False):
     if not all([EMAIL_FROM, EMAIL_TO, EMAIL_PASSWORD]):
         print("E-Mail-Konfig fehlt (Secrets prüfen!).", file=sys.stderr)
         return
-
-    # EMAIL_TO ist z. B.: "deine@mail.de, mama@mail.de, partner@mail.de"
     recipient_list = [email.strip() for email in EMAIL_TO.split(',')]
-    
+   
     msg = MIMEMultipart()
     msg['From'] = EMAIL_FROM
-    msg['To'] = EMAIL_TO  # Kommagetrennte Liste für die Anzeige im Mail-Client
+    msg['To'] = EMAIL_TO
     msg['Subject'] = ' PROBEALARM: ADHS-Termin Test' if is_test else '🚨 ALARM! ADHS-Termin verfügbar bei MVZ Noris Psychotherapie!'
-    
+   
     body = f"""
     {'Hallöchen' if not is_test else 'Das ist nur ein TEST :)'}
-
     {'Es gibt gerade einen freien Termin für die ADHS-Diagnostik! Direktlink zur Buchungsseite: https://www.terminland.de/noris-psychotherapie/online/ADHS-Abkl%c3%a4rung%20f%c3%bcr%20Kinder%20oder%20Jugendliche/default.aspx?m=39059&ll=LDUrD&dpp=LDUrD&dlgid=9&step=3&dlg=1&a2364649380=2790686455&css=1 '}
-
     Tobi :)
     """
-    
+   
     msg.attach(MIMEText(body, 'plain'))
-    
+   
     try:
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
